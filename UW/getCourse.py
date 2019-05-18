@@ -1,5 +1,5 @@
 import config
-from course import Course
+from course import Course, CourseInfo
 
 import re
 import json
@@ -14,8 +14,8 @@ def getTagText(tag):
 	else:
 		return tag.get_text().strip().replace('\n', ' ')
 
+all_courses = []
 courses = {}
-all_courses = open('course/courses.txt', 'w')
 
 for subject in config.ALL_SUBJECTS:
 	page = requests.get(subject).text
@@ -69,12 +69,11 @@ for subject in config.ALL_SUBJECTS:
 			'notes': notes
 		}
 
-		course_obj = Course(data)
+		all_courses.append(vars(CourseInfo(data)))
+		courses[subject_code][catalog_number] = vars(Course(data))
 
-		courses[subject_code][catalog_number] = vars(course_obj);
-		all_courses.write(subject_code + ' ' + catalog_number + '\n')
+with open('course/courses.json', 'w') as course_data:
+	course_data.write(json.dumps(all_courses, indent=4))
 
 with open('course/course_data.json', 'w') as course_data:
 	course_data.write(json.dumps(courses, indent=4))
-
-all_courses.close()
